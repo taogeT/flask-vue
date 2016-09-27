@@ -1,2 +1,3 @@
-# flask-vuejs
-Flask extension about Vue.js
+# Flask-Vue
+
+Flask supports for Vue.js 1.0+ (Python3 version).
