@@ -2,9 +2,7 @@
 from flask import current_app, Blueprint
 
 from .cdn import StaticCDN, WebCDN, ConditionalCDN
-
-VUE_VERSION = '1.0.26'
-VUE_RESOURCE_VERSION = '1.0.3'
+from .version import *
 
 
 def vue_find_resource(filename, cdn, use_minified=None):
@@ -47,14 +45,30 @@ class Vue(object):
         if not hasattr(app, 'extensions'):
             app.extensions = {}
 
-        vue_cdn = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue/%s/'.format(VUE_VERSION))
-        vue_resource_cdn = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue-resource/%s/'.format(VUE_RESOURCE_VERSION))
         local = StaticCDN('vue.static')
+        vue_main = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue/%s/'.format(VUE_VERSION))
+        vue_router = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue-router/%s/'.format(VUE_ROUTER_VERSION))
+        vue_resource = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue-resource/%s/'.format(VUE_RESOURCE_VERSION))
+        vue_async_data = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue-async-data/%s/'.format(VUE_ASYNC_DATA_VERSION))
+        vue_form = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue-form/%s/'.format(VUE_FORM_VERSION))
+        vue_i18n = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue-i18n/%s/'.format(VUE_I18N_VERSION))
+        vue_validator = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue-validator/%s/'.format(VUE_VALIDATOR_VERSION))
+        vuex = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vuex/%s/'.format(VUEX_VERSION))
+
+        def lwrap(cdn):
+            return ConditionalCDN('VUE_SERVE_LOCAL', local, cdn)
+
         app.extensions['vue'] = {
             'cdns': {
                 'local': local,
                 'static': StaticCDN(),
-                'vue': ConditionalCDN('VUE_SERVE_LOCAL', local, vue_cdn),
-                'vue-resource': ConditionalCDN('VUE_SERVE_LOCAL', local, vue_resource_cdn)
+                'vue': lwrap(vue_main),
+                'vue-router': lwrap(vue_router),
+                'vue-resource': lwrap(vue_resource),
+                'vue-async-data': lwrap(vue_async_data),
+                'vue-form': lwrap(vue_form),
+                'vue-i18n': lwrap(vue_i18n),
+                'vue-validator': lwrap(vue_validator),
+                'vuex': lwrap(vuex)
             }
         }
