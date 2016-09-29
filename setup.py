@@ -4,11 +4,14 @@ Flask-Vue
 -------------
 Flask supports for Vue.js 1.0+ (Python3 version).
 """
-from setuptools import setup
+try:
+    from setuptools import setup
+except:
+    from distutils.core import setup
 
 import codecs
 
-version = '0.1.0'
+version = '0.2.1'
 
 setup(
     name='Flask-Vue',
@@ -27,7 +30,7 @@ setup(
         'Flask>=0.11'
     ],
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Framework :: Flask',
         'Intended Audience :: Developers',

@@ -1,56 +1,37 @@
 # -*- coding: UTF-8 -*-
-from flask import current_app, url_for
+from flask import url_for
 
 
 class CDN(object):
     """Base class for CDN objects."""
 
-    def get_resource_url(self, filename):
+    def get_resource_url(self):
         """Return resource url for filename."""
         raise NotImplementedError
 
 
-class StaticCDN(CDN):
+class LocalCDN(object):
     """A CDN that serves content from the local application.
 
     :param static_endpoint: Endpoint to use.
     """
 
-    def __init__(self, static_endpoint='static'):
+    def __init__(self, static_endpoint='vue.static'):
         self.static_endpoint = static_endpoint
 
-    def get_resource_url(self, filename, **kwargs):
-        return url_for(self.static_endpoint, filename=filename, **kwargs)
+    def get_resource_url(self, filename):
+        return url_for(self.static_endpoint, filename=filename)
 
 
-class WebCDN(CDN):
+class CdnjsCDN(object):
     """Serves files from the Web.
 
     :param baseurl: The baseurl. Filenames are simply appended to this URL.
     """
 
-    def __init__(self, baseurl):
-        self.baseurl = baseurl
+    def __init__(self):
+        self.baseurl = '//cdnjs.cloudflare.com/ajax/libs/{name}/{version}/{filename}'
 
-    def get_resource_url(self, filename):
-        return self.baseurl + filename
-
-
-class ConditionalCDN(object):
-    """Serves files from one CDN or another, depending on whether a
-    configuration value is set.
-
-    :param confvar: Configuration variable to use.
-    :param primary: CDN to use if the configuration variable is ``True``.
-    :param fallback: CDN to use otherwise.
-    """
-
-    def __init__(self, confvar, primary, fallback):
-        self.confvar = confvar
-        self.primary = primary
-        self.fallback = fallback
-
-    def get_resource_url(self, filename):
-        if current_app.config[self.confvar]:
-            return self.primary.get_resource_url(filename)
-        return self.fallback.get_resource_url(filename)
+    def get_resource_url(self, name, version, use_minified=True):
+        filename = '{}{}.js'.format(name, '.min' if use_minified else '')
+        return self.baseurl.format(name, version, filename)

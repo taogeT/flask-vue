@@ -1,27 +1,51 @@
 # -*- coding: UTF-8 -*-
 from flask import current_app, Blueprint
+from jinja2 import Markup
 
-from .cdn import StaticCDN, WebCDN, ConditionalCDN
-from .version import *
+from .cdn import LocalCDN, CdnjsCDN, CDN
+from .resource import plugins
+
+import os
 
 
-def vue_find_resource(filename, cdn, use_minified=None):
+def vue_find_resource(pluginname, use_minified=None):
     """Resource finding function, also available in templates.
 
-    :param filename: File to find a URL for.
-    :param cdn: Name of the CDN to use.
+    :param pluginname: Plugin to find a URL for.
     :param use_minified': If set to True/False, use/don't use minified.
                           If None, honors VUE_USE_MINIFIED.
     :return: A URL.
     """
-    if (isinstance(use_minified, bool) and use_minified) or current_app.config['VUE_USE_MINIFIED']:
-        filename = '%s.min.%s' % tuple(filename.rsplit('.', 1))
-    resource_url = current_app.extensions['vue']['cdns'][cdn].get_resource_url(filename)
+    return _get_resource_url(plugins[pluginname], use_minified=use_minified,
+                            use_local=current_app.config['VUE_SERVE_LOCAL'])
 
+
+def _get_resource_url(plugin, use_local=False, use_minified=None):
+    ismin = (isinstance(use_minified, bool) and use_minified) or current_app.config['VUE_USE_MINIFIED']
+    if use_local:
+        filename = os.path.join(plugin['local'], '{}{}.js'.format(plugin['name'], '.min' if ismin else ''))
+        lcdn = LocalCDN(static_endpoint='static') if plugin['cdn'] == 'static' else LocalCDN()
+        resource_url = lcdn.get_resource_url(filename)
+    elif plugin['cdn'] == 'cdnjs':
+        resource_url = CdnjsCDN().get_resource_url(plugin['name'], plugin['version'], use_minified=ismin)
+    else:
+        resource_url = CDN().get_resource_url()
     if resource_url.startswith('//') and current_app.config['VUE_CDN_FORCE_SSL']:
         resource_url = 'https:%s' % resource_url
-
     return resource_url
+
+
+class _Vue(object):
+
+    def __init__(self):
+        for eplugin in plugins.items():
+            setattr(self, 'incldue_{}'.format(eplugin['name']), self._include_plugin(eplugin))
+
+    def _include_plugin(self, eplugin):
+        def _inner_wrapper(use_local=current_app.config['VUE_SERVE_LOCAL'], use_minified=None):
+            resource_url = _get_resource_url(eplugin, use_local=use_local, use_minified=use_minified)
+            return Markup('<script src="%s"></script>\n'.format(resource_url))
+        return _inner_wrapper
 
 
 class Vue(object):
@@ -41,34 +65,6 @@ class Vue(object):
         app.register_blueprint(blueprint)
 
         app.jinja_env.globals['vue_find_resource'] = vue_find_resource
-
         if not hasattr(app, 'extensions'):
             app.extensions = {}
-
-        local = StaticCDN('vue.static')
-        vue_main = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue/%s/'.format(VUE_VERSION))
-        vue_router = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue-router/%s/'.format(VUE_ROUTER_VERSION))
-        vue_resource = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue-resource/%s/'.format(VUE_RESOURCE_VERSION))
-        vue_async_data = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue-async-data/%s/'.format(VUE_ASYNC_DATA_VERSION))
-        vue_form = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue-form/%s/'.format(VUE_FORM_VERSION))
-        vue_i18n = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue-i18n/%s/'.format(VUE_I18N_VERSION))
-        vue_validator = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vue-validator/%s/'.format(VUE_VALIDATOR_VERSION))
-        vuex = WebCDN('//cdnjs.cloudflare.com/ajax/libs/vuex/%s/'.format(VUEX_VERSION))
-
-        def lwrap(cdn):
-            return ConditionalCDN('VUE_SERVE_LOCAL', local, cdn)
-
-        app.extensions['vue'] = {
-            'cdns': {
-                'local': local,
-                'static': StaticCDN(),
-                'vue': lwrap(vue_main),
-                'vue-router': lwrap(vue_router),
-                'vue-resource': lwrap(vue_resource),
-                'vue-async-data': lwrap(vue_async_data),
-                'vue-form': lwrap(vue_form),
-                'vue-i18n': lwrap(vue_i18n),
-                'vue-validator': lwrap(vue_validator),
-                'vuex': lwrap(vuex)
-            }
-        }
+        app.extensions['vue'] = _Vue()
