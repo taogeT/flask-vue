@@ -34,4 +34,4 @@ class CdnjsCDN(object):
 
     def get_resource_url(self, name, version, use_minified=True):
         filename = '{}{}.js'.format(name, '.min' if use_minified else '')
-        return self.baseurl.format(name, version, filename)
+        return self.baseurl.format(name=name, version=version, filename=filename)

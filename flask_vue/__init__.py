@@ -16,13 +16,15 @@ def vue_find_resource(pluginname, use_minified=None):
                           If None, honors VUE_USE_MINIFIED.
     :return: A URL.
     """
-    return _get_resource_url(plugins[pluginname], use_minified=use_minified,
-                            use_local=current_app.config['VUE_SERVE_LOCAL'])
+    pluginf = list(filter(lambda x: x['name'] == pluginname, plugins))
+    return _get_resource_url(pluginf[0], use_minified=use_minified,
+                             use_local=current_app.config['VUE_SERVE_LOCAL'])
 
 
-def _get_resource_url(plugin, use_local=False, use_minified=None):
+def _get_resource_url(plugin, use_local=None, use_minified=None):
+    islocal = (isinstance(use_local, bool) and use_local) or current_app.config['VUE_SERVE_LOCAL']
     ismin = (isinstance(use_minified, bool) and use_minified) or current_app.config['VUE_USE_MINIFIED']
-    if use_local:
+    if islocal:
         filename = os.path.join(plugin['local'], '{}{}.js'.format(plugin['name'], '.min' if ismin else ''))
         lcdn = LocalCDN(static_endpoint='static') if plugin['cdn'] == 'static' else LocalCDN()
         resource_url = lcdn.get_resource_url(filename)
@@ -38,13 +40,13 @@ def _get_resource_url(plugin, use_local=False, use_minified=None):
 class _Vue(object):
 
     def __init__(self):
-        for eplugin in plugins.items():
-            setattr(self, 'incldue_{}'.format(eplugin['name']), self._include_plugin(eplugin))
+        for eplugin in plugins:
+            setattr(self, 'include_{}'.format(eplugin['name'].replace('-', '_')), self._include_plugin(eplugin))
 
     def _include_plugin(self, eplugin):
-        def _inner_wrapper(use_local=current_app.config['VUE_SERVE_LOCAL'], use_minified=None):
+        def _inner_wrapper(use_local=None, use_minified=None):
             resource_url = _get_resource_url(eplugin, use_local=use_local, use_minified=use_minified)
-            return Markup('<script src="%s"></script>\n'.format(resource_url))
+            return Markup('<script src="{}"></script>\n'.format(resource_url))
         return _inner_wrapper
 
 
@@ -68,3 +70,9 @@ class Vue(object):
         if not hasattr(app, 'extensions'):
             app.extensions = {}
         app.extensions['vue'] = _Vue()
+
+        def context_processor():
+            return {
+                'vue': current_app.extensions['vue']
+            }
+        app.context_processor(context_processor)
