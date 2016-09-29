@@ -1,9 +1,16 @@
 ===============
 Flask-Vue
 ===============
-
-.. image:: https://travis-ci.org/mbr/flask-vue.png?branch=master
-   :target: https://travis-ci.org/mbr/flask-vue
+.. image:: https://img.shields.io/pypi/v/Flask-Vue.svg
+    :target: https://pypi.python.org/pypi/Flask-Vue/
+.. image:: https://img.shields.io/pypi/dm/Flask-Vue.svg
+    :target: https://pypi.python.org/pypi/Flask-Vue/
+.. image:: https://img.shields.io/pypi/l/Flask-Vue.svg
+    :target: https://pypi.python.org/pypi/Flask-Vue
+.. image:: https://img.shields.io/pypi/pyversions/Flask-Vue.svg
+    :target: https://pypi.python.org/pypi/Flask-Vue/
+.. image:: https://img.shields.io/pypi/status/Flask-Vue.svg
+    :target: https://pypi.python.org/pypi/Flask-Vue/
 
 Flask-Vue packages `Vue.js
 <http://vuejs.org>`_ into an extension. It can also create links to serve Vue
