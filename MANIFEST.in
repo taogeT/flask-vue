@@ -1,0 +1,3 @@
+recursive-include flask_vue/static *
+recursive-include flask_vue/templates *.html
+include README.rst

@@ -11,7 +11,7 @@ except:
 
 import codecs
 
-version = '0.2.1'
+version = '0.2.2'
 
 setup(
     name='Flask-Vue',
@@ -22,7 +22,7 @@ setup(
     author_email='zwtzjd@gmail.com',
     description='Vue.js 1.0+ integration for Flask (Python 3 version)',
     long_description=codecs.open('README.rst', 'r', 'utf-8').read(),
-    py_modules=['flask_vue'],
+    packages=['flask_vue'],
     zip_safe=False,
     include_package_data=True,
     platforms='any',
