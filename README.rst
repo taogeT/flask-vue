@@ -15,9 +15,9 @@ Flask-Vue packages `Vue.js
 
 It can also create links to serve Vue from a CDN and works with no boilerplate code in your application.
 
------
+----------------
 Contain Scripts
------
+----------------
 
 Scripts List
 
@@ -39,9 +39,9 @@ Scripts List
 |vue-table      | 1.5.3  |
 +---------------+--------+
 
------
+------
 Usage
------
+------
 
 Here is an example on init Vue::
 
@@ -56,9 +56,9 @@ Here is an example on init Vue::
   vue = Vue()
   vue.init_app(app)
 
------
+--------------
 Configuration
------
+--------------
 There are configuration options used by Flask-Vue.
 
 +--------------------+------------------+--------------------------------------------------------------------+
