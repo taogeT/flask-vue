@@ -71,7 +71,7 @@ There are configuration options used by Flask-Vue.
 |VUE_LOCAL_SUBDOMAIN | None             |Passes a subdomain parameter to the generated Blueprint.            |
 |                    |                  |Useful when serving assets locally from a different subdomain.      |
 +--------------------+------------------+--------------------------------------------------------------------+
-|VUE_CDN_FORCE_SSL   | True             |If a CDN resource url starts with //, prepend 'https:' to it.       |
+|VUE_CDN_FORCE_SSL   | False            |If a CDN resource url starts with //, prepend 'https:' to it.       |
 +--------------------+------------------+--------------------------------------------------------------------+
 |VUE_CONFIGURATION   | flask_vue.config |Individualized setting about each script.                           |
 |                    |                  |It supports to config CDN scripts which do not have local instance. |
