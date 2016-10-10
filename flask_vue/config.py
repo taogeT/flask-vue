@@ -4,7 +4,7 @@ VUE_CONFIGURATION = [
         'name': 'vue',
         'use_local': False,
         'cdn': 'cloudflare',
-        'version': '2.0.1'
+        'version': '1.0.28'
     },
     {
         'name': 'vue-async-data',
