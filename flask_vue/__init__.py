@@ -1,53 +1,30 @@
 # -*- coding: UTF-8 -*-
 from flask import current_app, Blueprint
-from jinja2 import Markup
 
-from .cdn import LocalCDN, CdnjsCDN, CDN
-from .resource import plugins
-
-import os
+from . import cdn
+from .cdn import LocalCDN, CDN
+from .config import VUE_CONFIGURATION
 
 
-def vue_find_resource(pluginname, use_minified=None):
+def vue_find_resource(name, use_minified=None):
     """Resource finding function, also available in templates.
 
-    :param pluginname: Plugin to find a URL for.
+    :param name: Script to find a URL for.
     :param use_minified': If set to True/False, use/don't use minified.
                           If None, honors VUE_USE_MINIFIED.
     :return: A URL.
     """
-    pluginf = list(filter(lambda x: x['name'] == pluginname, plugins))
-    return _get_resource_url(pluginf[0], use_minified=use_minified,
-                             use_local=current_app.config['VUE_SERVE_LOCAL'])
-
-
-def _get_resource_url(plugin, use_local=None, use_minified=None):
-    islocal = (isinstance(use_local, bool) and use_local) or current_app.config['VUE_SERVE_LOCAL']
-    ismin = (isinstance(use_minified, bool) and use_minified) or current_app.config['VUE_USE_MINIFIED']
-    if islocal:
-        filename = os.path.join(plugin['local'], '{}{}.js'.format(plugin['name'], '.min' if ismin else ''))
-        lcdn = LocalCDN(static_endpoint='static') if plugin['cdn'] == 'static' else LocalCDN()
-        resource_url = lcdn.get_resource_url(filename)
-    elif plugin['cdn'] == 'cdnjs':
-        resource_url = CdnjsCDN().get_resource_url(plugin['name'], plugin['version'], use_minified=ismin)
-    else:
-        resource_url = CDN().get_resource_url()
+    target = list(filter(lambda x: x['name'] == name, current_app.config['VUE_CONFIGURATION']))
+    if not target:
+        raise ValueError('Can not find resource from configuration.')
+    target = target[0]
+    use_minified = (isinstance(use_minified, bool) and use_minified) or current_app.config['VUE_USE_MINIFIED']
+    CdnClass = LocalCDN if target['use_local'] else getattr(cdn, target['cdn'], CDN)
+    resource_url = CdnClass(name=name, version=target.get('version', ''),
+                            use_minified=use_minified).get_resource_url()
     if resource_url.startswith('//') and current_app.config['VUE_CDN_FORCE_SSL']:
         resource_url = 'https:%s' % resource_url
     return resource_url
-
-
-class _Vue(object):
-
-    def __init__(self):
-        for eplugin in plugins:
-            setattr(self, 'include_{}'.format(eplugin['name'].replace('-', '_')), self._include_plugin(eplugin))
-
-    def _include_plugin(self, eplugin):
-        def _inner_wrapper(use_local=None, use_minified=None):
-            resource_url = _get_resource_url(eplugin, use_local=use_local, use_minified=use_minified)
-            return Markup('<script src="{}"></script>\n'.format(resource_url))
-        return _inner_wrapper
 
 
 class Vue(object):
@@ -60,6 +37,20 @@ class Vue(object):
         app.config.setdefault('VUE_CDN_FORCE_SSL', False)
         app.config.setdefault('VUE_SERVE_LOCAL', False)
         app.config.setdefault('VUE_LOCAL_SUBDOMAIN', None)
+        app.config.setdefault('VUE_CONFIGURATION', None)
+
+        real_vue_config = [dict(x, use_local=app.config['VUE_SERVE_LOCAL']) for x in VUE_CONFIGURATION]
+        if isinstance(app.config['VUE_CONFIGURATION'], list):
+            while len(app.config['VUE_CONFIGURATION']) > 0:
+                selfconfig = app.config['VUE_CONFIGURATION'].pop()
+                for vueconfig in real_vue_config:
+                    if selfconfig['name'] == vueconfig['name']:
+                        for key, val in selfconfig.items():
+                            vueconfig[key] = val
+                        break
+                else:
+                    real_vue_config.append(selfconfig)
+        app.config['VUE_CONFIGURATION'] = real_vue_config
 
         blueprint = Blueprint('vue', __name__, template_folder='templates',
                               static_folder='static', static_url_path=app.static_url_path + '/vue',
@@ -67,12 +58,3 @@ class Vue(object):
         app.register_blueprint(blueprint)
 
         app.jinja_env.globals['vue_find_resource'] = vue_find_resource
-        if not hasattr(app, 'extensions'):
-            app.extensions = {}
-        app.extensions['vue'] = _Vue()
-
-        def context_processor():
-            return {
-                'vue': current_app.extensions['vue']
-            }
-        app.context_processor(context_processor)
