@@ -42,5 +42,15 @@ class JsdelivrCDN(CDN):
         return self.baseurl.format(name=name, version=self.version, filename=filename)
 
 
+class BootcssCDN(CDN):
+    """ Serves files from the Web. """
+    baseurl = '//cdn.bootcss.com/{name}/{version}/{filename}'
+
+    def get_resource_url(self):
+        filename = '{}{}.js'.format(self.name, '.min' if self.use_minified else '')
+        return self.baseurl.format(name=self.name, version=self.version, filename=filename)
+
+
 cloudflare = CloudflareCDN
 jsdelivr = JsdelivrCDN
+bootcss = BootcssCDN

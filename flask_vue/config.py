@@ -4,7 +4,7 @@ VUE_CONFIGURATION = [
         'name': 'vue',
         'use_local': False,
         'cdn': 'cloudflare',
-        'version': '1.0.26'
+        'version': '2.0.1'
     },
     {
         'name': 'vue-async-data',
@@ -47,5 +47,17 @@ VUE_CONFIGURATION = [
         'use_local': False,
         'cdn': 'jsdelivr',
         'version': '1.5.3'
+    },
+    {
+        'name': 'vuex',
+        'use_local': False,
+        'cdn': 'cloudflare',
+        'version': '2.0.0'
+    },
+    {
+        'name': 'vue-strap',
+        'use_local': False,
+        'cdn': 'cloudflare',
+        'version': '1.1.29'
     }
 ]
