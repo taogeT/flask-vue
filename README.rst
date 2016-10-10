@@ -3,8 +3,6 @@ Flask-Vue
 ===============
 .. image:: https://img.shields.io/pypi/v/Flask-Vue.svg
     :target: https://pypi.python.org/pypi/Flask-Vue/
-.. image:: https://img.shields.io/pypi/dm/Flask-Vue.svg
-    :target: https://pypi.python.org/pypi/Flask-Vue/
 .. image:: https://img.shields.io/pypi/l/Flask-Vue.svg
     :target: https://pypi.python.org/pypi/Flask-Vue
 .. image:: https://img.shields.io/pypi/pyversions/Flask-Vue.svg
@@ -23,9 +21,9 @@ Contain Scripts
 
 Scripts List
 
-+---------------+--------+
-|vue            | 1.0.26 |
 +===============+========+
+|vue            | 1.0.26 |
++---------------+--------+
 |vue-async-data | 1.0.2  |
 +---------------+--------+
 |vue-form       | 0.3.1  |
@@ -38,14 +36,14 @@ Scripts List
 +---------------+--------+
 |vue-validator  | 2.1.7  |
 +---------------+--------+
-|vuex           | 0.8.2  |
+|vue-table      | 1.5.3  |
 +---------------+--------+
 
 -----
 Usage
 -----
 
-Here is an example::
+Here is an example on init Vue::
 
   from flask_vue import Vue
 
@@ -58,3 +56,23 @@ Here is an example::
   vue = Vue()
   vue.init_app(app)
 
+-----
+Configuration
+-----
+There are configuration options used by Flask-Vue.
+
++--------------------+------------------+--------------------------------------------------------------------+
+|Option              | Default          |                                                                    |
++====================+==================+====================================================================+
+|VUE_USE_MINIFIED    | True             |Whether or not to use the minified scripts.                         |
++--------------------+------------------+--------------------------------------------------------------------+
+|VUE_SERVE_LOCAL     | False            |If True, scripts will be served from the local instance.            |
++--------------------+------------------+--------------------------------------------------------------------+
+|VUE_LOCAL_SUBDOMAIN | None             |Passes a subdomain parameter to the generated Blueprint.            |
+|                    |                  |Useful when serving assets locally from a different subdomain.      |
++--------------------+------------------+--------------------------------------------------------------------+
+|VUE_CDN_FORCE_SSL   | True             |If a CDN resource url starts with //, prepend 'https:' to it.       |
++--------------------+------------------+--------------------------------------------------------------------+
+|VUE_CONFIGURATION   | flask_vue.config |Individualized setting about each script.                           |
+|                    |                  |It supports to config CDN scripts which do not have local instance. |
++--------------------+------------------+--------------------------------------------------------------------+
